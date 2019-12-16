@@ -68,7 +68,7 @@ def train(args):
 
 
     def see_acc(engine):
-        return engine.metrics['top1_acc']
+        return engine.state.metrics['top1_acc']
     earlystop_handler = EarlyStopping(patience = args.patience+2, score_function=see_acc, trainer=trainer )
     evaluator.add_event_handler(Events.COMPLETED, earlystop_handler)
 

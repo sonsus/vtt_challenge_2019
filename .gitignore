@@ -5,3 +5,4 @@ nohup.out
 /log
 /ckpt
 __pycache__
+/*.log
