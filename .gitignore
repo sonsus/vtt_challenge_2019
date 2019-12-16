@@ -1,7 +1,15 @@
 .vector_cache
-nohup.out
-/data
+code/data/
+/.vector_cache
+/nohup.out
+/coda/data
+!/code/data/*.py
+!code/data/*py
 /data_sample
+/*.ckpt
+/**/*.ckpt
+/code/data/ckpt/*
+/code/data/log/*
 /log
 /ckpt
 __pycache__

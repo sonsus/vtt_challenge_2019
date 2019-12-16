@@ -3,7 +3,7 @@ from ignite.engine.engine import Engine, State, Events
 from ckpt import get_model_ckpt, save_ckpt
 from loss import get_loss
 from optimizer import get_optimizer
-from logger import get_logger, log_results
+from logger import *
 
 from utils import *
 from lrschedulers import *
@@ -69,12 +69,19 @@ def train(args):
 
     def see_acc(engine):
         return engine.state.metrics['top1_acc']
-    earlystop_handler = EarlyStopping(patience = args.patience+2, score_function=see_acc, trainer=trainer )
+    earlystop_handler = EarlyStopping(patience = args.patience+10, score_function=see_acc, trainer=trainer )
     evaluator.add_event_handler(Events.COMPLETED, earlystop_handler)
 
     @trainer.on(Events.STARTED)
     def on_training_started(engine):
         print("Begin Training")
+
+    @trainer.on(Events.ITERATION_STARTED)
+    def log_lr_iter(engine):
+        log_lr(logger, 'lr/iter', optimizer, engine.state.iteration)
+    @trainer.on(Events.EPOCH_STARTED)
+    def log_lr_ep(engine):
+        log_lr(logger, 'lr/ep', optimizer, engine.state.epoch)
 
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_iter_results(engine):
