@@ -14,6 +14,7 @@ from train import train
 from evaluate import evaluate
 from interactive import interactive
 from infer import infer
+from pprint import pprint
 
 
 class Cli:
@@ -29,7 +30,7 @@ class Cli:
         args.update(resolve_paths(config))
         args.update(fix_seed(args))
         args.update(get_device(args))
-        print(args)
+        pprint(args)
 
         return Munch(args)
 
@@ -71,7 +72,7 @@ class Cli:
 def resolve_paths(config):
     paths = [k for k in config.keys() if k.endswith('_path')]
     res = {}
-    root = Path('../').resolve()
+    root = Path().resolve()#Path('../').resolve()
     for path in paths:
         res[path] = root / config[path]
 

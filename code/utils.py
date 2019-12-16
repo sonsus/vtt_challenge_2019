@@ -12,6 +12,25 @@ import torch
 from config import log_keys
 
 
+def sample_images(args, images):
+    '''
+    sampleout images amongst valid
+    '''
+    bsz, num_im, image_dim = list(images.shape)
+    num_valids = (images != 0).sum(1)[:, 0] #bsz
+    stack_list = []
+    for i, valid in enumerate(num_valids):
+        if valid != 0:
+            idx = torch.multinomial(torch.ones(valid)/float(valid), args.nsample, replacement = True).type_as(num_valids).long()
+        else:
+            idx = torch.ones(args.nsample).type_as(num_valids).long()
+        stack_list.append(images[i].index_select(0, idx))
+
+    return torch.stack(stack_list) # bsz, nsample, hid
+
+
+
+
 def get_dirname_from_args(args):
     dirname = ''
     for key in sorted(log_keys):

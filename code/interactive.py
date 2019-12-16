@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from rouge import Rouge
+from metric.pycocoevalcap.rouge.rouge import Rouge
 from torchtext.data.batch import Batch
 
 from ckpt import get_model_ckpt

@@ -17,28 +17,28 @@ class Logger:
         self.log_path = args.log_path / log_name
         # os.makedirs(self.log_path, exist_ok=True)
         self.log_path.mkdir(parents=True, exist_ok=True)
-        self.tfboard = SummaryWriter(self.log_path)
+        self.tfboard = SummaryWriter(str(self.log_path))
 
-        self.url = run_tensorboard(self.log_path)
-        print("Running Tensorboard at {}".format(self.url))
+        #self.url = run_tensorboard(self.log_path)
+        #print("Running Tensorboard at {}".format(self.url))
 
     def __call__(self, name, val, n_iter):
         self.tfboard.add_scalar(name, val, n_iter)
         if self.log_cmd:
             tqdm.write('{}:({},{})'.format(n_iter, name, val))
 
-
+'''
 def run_tensorboard(log_path):
     log = logging.getLogger('werkzeug').setLevel(logging.ERROR)
     log = logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
-    port_num = abs(hash(log_path)) % (8800) + 1025  # above 1024, below 10000
+    port_num = 6006 #abs(hash(log_path)) % (8800) + 1025  # above 1024, below 10000
     tb = program.TensorBoard(default.get_plugins(), get_assets_zip_provider())
     tb.configure(argv=[None, '--logdir', str(log_path), '--port', str(port_num),
                        '--samples_per_plugin', 'text=100'])
     url = tb.launch()
     return url
-
+'''
 
 # forward compatibility for version > 1.12
 def get_assets_zip_provider():

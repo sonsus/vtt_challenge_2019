@@ -2,8 +2,11 @@ from functools import partial
 from collections import defaultdict
 
 import torch
+import torchtext
 from torchtext import data
 import nltk
+from transformers import DistilBertTokenizer
+
 
 from utils import pad_tensor, make_jsonl
 from .load_subtitle import update_subtitle
@@ -18,13 +21,22 @@ def load_text_data(args, tokenizer, vocab=None):
     q_level_logic = InfoField()
     correct_idx = InfoField()
 
-    que = data.Field(sequential=True, tokenize=tokenizer, lower=args.lower)
-    description = data.Field(sequential=True, tokenize=tokenizer, lower=args.lower)
-    subtitle = data.Field(sequential=True, tokenize=tokenizer, lower=args.lower)
-    single_answer = data.Field(sequential=True, tokenize=tokenizer, lower=args.lower,
-                          init_token='<sos>', eos_token='<eos>',
-                          unk_token='<unk>')
-    answers = data.NestedField(single_answer)
+    notdistilbert = (args.tokenizer!='distilbert') # wouldnt work for nltk
+    cls_id = tokenizer.cls_token_id
+    pad_id = tokenizer.pad_token_id
+    unk_id = tokenizer.unk_token_id
+    if not notdistilbert:
+        tokenizer_enc = tokenizer.encode
+    #tokenizer('[CLS]') #https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
+    que = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
+                    init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
+    description = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
+                            init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
+    subtitle = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
+                            init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
+    single_answer = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
+                                init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
+    answers = data.NestedField(single_answer, use_vocab=notdistilbert, pad_token=pad_id)
 
     common_fields = {
         'vid': ('vid', vid),
@@ -101,9 +113,14 @@ def process_vocab(vocab):
 
 
 def get_tokenizer(args):
-    return {
-        'nltk': nltk.word_tokenize
-    }[args.tokenizer.lower()]
+    if args.tokenizer == 'distilbert':
+        tok = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+        vocab = torchtext.vocab.Vocab(tok.vocab, min_freq=args.vocab_freq, specials=[])
+        return tok, vocab
+    else: #nltk
+        return {
+            'nltk': nltk.word_tokenize,
+        }[args.tokenizer.lower()], None
 
 
 class ImageIterator:
@@ -148,7 +165,7 @@ def get_image_iterator(args, text_it):
 # batch: [len, batch_size]
 def get_iterator(args, vocab=None):
     print("Loading Text Data")
-    tokenizer = get_tokenizer(args)
+    tokenizer, vocab = get_tokenizer(args)
     iters, vocab = load_text_data(args, tokenizer, vocab)
     print("Loading Image Data")
     image_iters = {}

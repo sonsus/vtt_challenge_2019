@@ -5,10 +5,16 @@ from loss import get_loss
 from optimizer import get_optimizer
 from logger import get_logger, log_results
 
-from utils import prepare_batch
+from utils import *
+from lrschedulers import *
 from metric import get_metrics
 from evaluate import get_evaluator, evaluate_once
 from metric.stat_metric import StatMetric
+from munch import Munch as M
+
+from tqdm import tqdm
+from ignite.handlers import EarlyStopping
+from functools import partial
 
 
 def get_trainer(args, model, loss_fn, optimizer):
@@ -16,6 +22,7 @@ def get_trainer(args, model, loss_fn, optimizer):
         model.train()
         optimizer.zero_grad()
         net_inputs, target = prepare_batch(args, batch, model.vocab)
+        net_inputs = M(net_inputs) # que, images, answers, subtitle,
         y_pred = model(**net_inputs)
         batch_size = y_pred.shape[0]
         loss, stats = loss_fn(y_pred, target)
@@ -46,11 +53,25 @@ def train(args):
     loss_fn = get_loss(args, vocab)
     optimizer = get_optimizer(args, model)
 
+    len_train = len(iters['train'].it) # iters['train'].it : text iterator
+                                        # iters['train']: paired object of image_iterator and text_iterator
+    lrsch = get_scheduler(args, optimizer, len_train)
+
     trainer = get_trainer(args, model, loss_fn, optimizer)
     metrics = get_metrics(args, vocab)
     evaluator = get_evaluator(args, model, loss_fn, metrics)
 
     logger = get_logger(args)
+
+
+    progress_bar = tqdm(total=args.max_epochs * len_train)
+
+
+    def see_acc(engine):
+        return engine.metrics['top1_acc']
+    earlystop_handler = EarlyStopping(patience = args.patience+2, score_function=see_acc, trainer=trainer )
+    evaluator.add_event_handler(Events.COMPLETED, earlystop_handler)
+
     @trainer.on(Events.STARTED)
     def on_training_started(engine):
         print("Begin Training")
@@ -58,12 +79,22 @@ def train(args):
     @trainer.on(Events.ITERATION_COMPLETED)
     def log_iter_results(engine):
         log_results(logger, 'train/iter', engine.state, engine.state.iteration)
+        progress_bar.update()
+        if args.lrschedule != 'rop':
+            lrsch.step()
+
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def evaluate_epoch(engine):
         log_results(logger, 'train/epoch', engine.state, engine.state.epoch)
         state = evaluate_once(evaluator, iterator=iters['val'])
+
+
         log_results(logger, 'valid/epoch', state, engine.state.epoch)
-        save_ckpt(args, engine.state.epoch, engine.state.metrics['loss'], model, vocab)
+        if args.lrschedule == 'rop':
+            lrsch.step(state.metrics['loss'])
+        save_ckpt(args, engine.state.epoch, state.metrics['loss'], model, vocab) # save by val loss
+
 
     trainer.run(iters['train'], max_epochs=args.max_epochs)
+    progress_bar.close()

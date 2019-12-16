@@ -48,6 +48,6 @@ class CrossEntropyLoss(nn.CrossEntropyLoss):
     @classmethod
     def resolve_args(cls, args, vocab):
         eps = args.get("label_smoothing", 0)
-        padding_idx = vocab.stoi[vocab.pad]
+        padding_idx = 0#vocab.stoi[vocab.pad]
 
         return cls(eps=eps, padding_idx=padding_idx)
