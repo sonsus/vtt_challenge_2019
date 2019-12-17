@@ -1,16 +1,14 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from transformers import DistilBertConfig, DistilBertForSequenceClassification
-from model.vaswani import Vaswani
-from math import log2
+from transformers import BertConfig, BertForMultipleChoice
 from utils import *
 #from einops import rearrange
 from copy import deepcopy
 from ipdb import set_trace
 
 
-class dbertqa(nn.Module):
+class bertqa(nn.Module):
     def __init__(self, args, vocab, n_dim, image_dim, layers, dropout, num_choice=5):
         super().__init__()
 
@@ -20,13 +18,11 @@ class dbertqa(nn.Module):
         self.vocab = vocab
         self.args = args
 
-        config = DistiBertConfig
-        config.output_hidden_states=True
-        DistilBert = DistilBertForSequenceClassification(config)
-        DistilBert = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
+        Bert = BertForMultipleChoice.from_pretrained('bert-base-uncased')
+        #DistilBert = DistilBertForSequenceClassification(config)
+        #DistilBert = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased')
 
-        self.embedder = DistilBert
-        self.answerer = MLP(768, num_choice)
+        self.embedder = Bert
 
 
     @classmethod
@@ -40,33 +36,10 @@ class dbertqa(nn.Module):
         que = que.unsqueeze(-2).repeat(1, choices, 1) # bsz choices seqlen
 
         paired = torch.cat((que, answers), dim=-1)
-        paired = paired.view(bsz*choices, -1)
-        hids = self.embedder(paired)
-        hids = hids.view(bsz, choices, -1, 768)
-        cls_hid = hids[:, :, 0, :] # bsz, choices, 768
+        scores = self.embedder(paired)[0] # bsz*choices, 1
 
-        o = self.answerer(cls_hid)
+        return scores
 
-        return o
-
-
-
-class MLP(nn.Module):
-    def __init__(self, args, n_dim):
-        super().__init__()
-        self.linears = nn.Sequential(*[
-                                        nn.Linear( n_dim//(2**i), n_dim//(2**(i+1)) )
-                                        for i in range(int(log2(n_dim)))
-                                        ]
-                                    )
-        self.args = args
-
-    def forward(self, x):
-        for layer in self.linears:
-            x = F.leaky_relu(
-                    F.dropout(layer(x), p=self.args.dropout)
-                )
-        return x
 
 
 '''

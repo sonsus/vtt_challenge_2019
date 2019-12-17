@@ -4,7 +4,7 @@ from collections import defaultdict
 import torch
 from torchtext import data
 import nltk
-from transformers import DistilBertTokenizer
+from transformers import BertTokenizer
 
 from utils import pad_tensor, make_jsonl
 from .preprocess_image import preprocess_images, get_empty_image_vector
@@ -88,7 +88,7 @@ def process_vocab(vocab):
 
 def get_tokenizer(args):
     if args.tokenizer == 'distilbert':
-        tok = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+        tok = BertTokenizer.from_pretrained('distilbert-base-uncased')
         return tok.encode
     else: #nltk
         return {

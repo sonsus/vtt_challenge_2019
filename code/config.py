@@ -4,7 +4,7 @@ config = {
 
     #model_settings
     'multichoice': True,
-    'model_name': 'dbertqa', # 'twopunch', dbertqa
+    'model_name': 'bertqa', # 'twopunch', dbertqa
     'aggregation': 'cat', # aggregate image and text with this operation in vaswani.py, twopunch.py
         # sum
         # elemwise
@@ -21,7 +21,7 @@ config = {
     'data_path': 'data/AnotherMissOh/AnotherMissOh_QA/AnotherMissOhQA_set_subtitle.jsonl',
     'subtitle_path': 'data/AnotherMissOh/AnotherMissOh_subtitles.json',
 
-    'tokenizer': 'distilbert', #'nltk',
+    'tokenizer': 'bert', #'nltk',
     'vocab_freq': 1,
     #'vocab_pretrained': "glove.6B.300d",
     'video_type': ['shot', 'scene'],

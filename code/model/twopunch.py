@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from transformers import DistilBertConfig, DistilBertModel
+from transformers import BertConfig, BertModel
 from model.vaswani import Vaswani
 from math import log2
 from utils import *
@@ -22,12 +22,12 @@ class Twopunch(nn.Module):
         V = len(vocab)
         D = n_dim
 
-        DistilBert = DistilBertModel.from_pretrained('distilbert-base-uncased')
-        for param in DistilBert.parameters():
+        Bert = BertModel.from_pretrained('distilbert-base-uncased')
+        for param in Bert.parameters():
             param.requires_grad = False # see if this causes prob in optimizer passing
             # if does see
             # https://discuss.pytorch.org/t/how-the-pytorch-freeze-network-in-some-layers-only-the-rest-of-the-training/7088/23
-        self.sent_embedder = DistilBert
+        self.sent_embedder = Bert
         self.image_encoder = Vaswani.resolve_args(args)
         self.distil2imsize = nn.Linear(768, args.image_dim)
 

@@ -16,8 +16,8 @@ def get_evaluator(args, model, loss_fn, metrics={}):
         model.eval()
         with torch.no_grad():
             net_inputs, target = prepare_batch(args, batch, model.vocab)
-            if net_inputs['subtitle'].nelement() == 0:
-                import ipdb; ipdb.set_trace()  # XXX DEBUG
+            '''if net_inputs['subtitle'].nelement() == 0:
+                import ipdb; ipdb.set_trace()  # XXX DEBUG'''
             y_pred = model(**net_inputs)
             batch_size = y_pred.shape[0]
             loss, stats = loss_fn(y_pred, target)

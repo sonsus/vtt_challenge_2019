@@ -5,7 +5,7 @@ import torch
 import torchtext
 from torchtext import data
 import nltk
-from transformers import DistilBertTokenizer
+from transformers import BertTokenizer
 
 
 from utils import pad_tensor, make_jsonl
@@ -21,7 +21,7 @@ def load_text_data(args, tokenizer, vocab=None):
     q_level_logic = InfoField()
     correct_idx = InfoField()
 
-    notdistilbert = (args.tokenizer!='distilbert') # wouldnt work for nltk
+    notdistilbert = (args.tokenizer!='bert') # wouldnt work for nltk
     cls_id = tokenizer.cls_token_id
     pad_id = tokenizer.pad_token_id
     unk_id = tokenizer.unk_token_id
@@ -36,7 +36,7 @@ def load_text_data(args, tokenizer, vocab=None):
     subtitle = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
                             init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
     single_answer = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
-                                init_token=sep_id if model_name=='dbertqa' else cls_id , pad_token=pad_id, unk_token=unk_id)
+                                init_token=sep_id if args.model_name=='bertqa' else cls_id , pad_token=pad_id, unk_token=unk_id)
     answers = data.NestedField(single_answer, use_vocab=notdistilbert, pad_token=pad_id)
 
     common_fields = {
@@ -114,8 +114,8 @@ def process_vocab(vocab):
 
 
 def get_tokenizer(args):
-    if args.tokenizer == 'distilbert':
-        tok = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+    if args.tokenizer == 'bert':
+        tok = BertTokenizer.from_pretrained('bert-base-uncased')
         vocab = torchtext.vocab.Vocab(tok.vocab, min_freq=args.vocab_freq, specials=[])
         return tok, vocab
     else: #nltk
