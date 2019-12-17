@@ -25,6 +25,7 @@ def load_text_data(args, tokenizer, vocab=None):
     cls_id = tokenizer.cls_token_id
     pad_id = tokenizer.pad_token_id
     unk_id = tokenizer.unk_token_id
+    sep_id = tokenizer.sep_token_id
     if not notdistilbert:
         tokenizer_enc = tokenizer.encode
     #tokenizer('[CLS]') #https://s3.amazonaws.com/models.huggingface.co/bert/bert-base-uncased-vocab.txt
@@ -35,7 +36,7 @@ def load_text_data(args, tokenizer, vocab=None):
     subtitle = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
                             init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
     single_answer = data.Field(sequential=True, tokenize=tokenizer_enc, use_vocab=notdistilbert,
-                                init_token=cls_id, pad_token=pad_id, unk_token=unk_id)
+                                init_token=sep_id if model_name=='dbertqa' else cls_id , pad_token=pad_id, unk_token=unk_id)
     answers = data.NestedField(single_answer, use_vocab=notdistilbert, pad_token=pad_id)
 
     common_fields = {

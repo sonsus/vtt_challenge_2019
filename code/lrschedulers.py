@@ -13,7 +13,7 @@ def get_scheduler(args, optimizer, leniter):
 
 
     num_training_steps = args.max_epochs * leniter
-
+    ws = args.warmup_steps
     if args.lrschedule == 'rop':
         lr_sch = ReduceLROnPlateau(optimizer, mode=args.mode,
                                     factor=args.gamma,

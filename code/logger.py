@@ -74,5 +74,13 @@ def log_results_cmd(name, state, step):
             print("{}/{}".format(name, key), val, "step:{}".format(step))
 
 
+def log_lr(logger, name, optimizer, ep):
+    lr=0;
+    for param_group in optimizer.param_groups:
+        lr= param_group['lr']
+        break
+
+    logger(f"{name}", lr, ep)
+
 def get_logger(args):
     return Logger(args)

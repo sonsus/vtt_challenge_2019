@@ -4,7 +4,7 @@ config = {
 
     #model_settings
     'multichoice': True,
-    'model_name': 'twopunch', # 'twopunch'
+    'model_name': 'dbertqa', # 'twopunch', dbertqa
     'aggregation': 'cat', # aggregate image and text with this operation in vaswani.py, twopunch.py
         # sum
         # elemwise
@@ -15,7 +15,7 @@ config = {
     'log_path': 'data/log',
     'batch_sizes': (12, 12, 12),
     'lower': True,
-    'use_inputs': ['images', 'subtitle'],  # We advise not to use description for the challenge
+    'use_inputs': [],  # We advise not to use description for the challenge
     'cache_image_vectors': True,
     'image_path': 'data/AnotherMissOh/AnotherMissOh_images',
     'data_path': 'data/AnotherMissOh/AnotherMissOh_QA/AnotherMissOhQA_set_subtitle.jsonl',
@@ -62,7 +62,7 @@ config = {
 
     #lrschedulers.
     'lrschedule': 'rop', # None, 'rop', 'cos', 'sharp_cos', 'lin'
-    'warmup_steps': 2000, # common option for cos and lin schedule
+    'warmup_steps': 4000, # common option for cos and lin schedule
     'max_epochs': 20,
     ## rop options
     'gamma': 0.5,
