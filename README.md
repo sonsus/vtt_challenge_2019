@@ -1,3 +1,12 @@
+# twopunchman: BertQA code
+## Additional Dependency
+```bash
+pip install transformers 
+  ##huggingface transformers: requires gcc compiler 
+```
+## GPU requirements
+- >7GB GPU memory 
+
 # Video QA Pipeline
 
 This repository contains pipelines to conduct video QA with deep learning based models.
