@@ -2,7 +2,7 @@
 ## Additional Dependency
 ```bash
 pip install transformers 
-  ##huggingface transformers: requires gcc compiler 
+  ##huggingface transformers: requires gcc compiler (https://huggingface.co/transformers/)
 ```
 ## GPU requirements
 - >7GB GPU memory 
